@@ -53,8 +53,9 @@ const SongsList = () => {
 
       const fileHash = res.data.IpfsHash;
       const url = `https://gateway.pinata.cloud/ipfs/${fileHash}`;
-      alert.apply('successfully uploaded')
       setFile(url);
+      alert('successfully uploaded')
+
       setLoading(false);
     } catch (error) {
       console.error('Error uploading file to Pinata: ', error);
