@@ -17,6 +17,7 @@ const Login = () => {
       const signer = await provider.getSigner();
         console.log('address', signer.address)
         setAddress(signer.address)
+        localStorage.setItem('address',signer.address)
     //   if (signer.address) {
     //     navigate('/home')
     //   }
@@ -87,13 +88,13 @@ const Login = () => {
             <h1 className="text-6xl font-bold mb-6">Listening is everything</h1>
             <p className="text-2xl mb-8">Millions of songs and podcasts. No credit card needed.</p>
             <button onClick={connectMeta} className="bg-green-500 text-black px-6 py-3 rounded-full hover:bg-green-400 text-xl">
-              Connect Metamask
+            step 1. Connect Metamask
             </button>
             <button onClick={payFee} className="bg-green-500 text-black px-6 py-3 ml-2 rounded-full hover:bg-green-400 text-xl">
-              Pay 0.01 Sep
+            Step 2.  Pay 0.01 Sep
                     </button>
                     <button onClick={verifyPayment} className="bg-green-500 text-black px-6 py-3 ml-2 rounded-full hover:bg-green-400 text-xl">
-              Verify
+            step 3.  Verify
             </button>
           </div>
         </section>
