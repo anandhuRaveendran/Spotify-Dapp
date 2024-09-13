@@ -1,0 +1,77 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/anandu/Education/BLOCKCHAIN/Spotify-Dapp/Hardhat/contracts/SongStorage.sol": {
+      "lastModificationDate": 1726218448312,
+      "contentHash": "b7c463cb05f358e4a915f0e3bbacc5d4",
+      "sourceName": "contracts/SongStorage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SongStorage"
+      ]
+    },
+    "/home/anandu/Education/BLOCKCHAIN/Spotify-Dapp/Hardhat/contracts/payFee.sol": {
+      "lastModificationDate": 1726219782116,
+      "contentHash": "dfcbe5746b508b24ce9743ad88b64e9f",
+      "sourceName": "contracts/payFee.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "AccessControl"
+      ]
+    }
+  }
+}
