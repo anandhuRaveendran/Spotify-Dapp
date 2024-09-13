@@ -1,21 +1,26 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
-import { create } from 'ipfs-http-client';
+import { create as ipfsHttpClient } from "ipfs-http-client";
+import { Buffer } from 'buffer'; // Import Buffer polyfill
+import axios from 'axios';
 
 // Replace with your Infura project ID and secret
-const projectId = '15afd28d8e0e450b800bd4e53b6e982f';
-const projectSecret = '0jCO+0mQInfjHRVRpl92SzLcahjT4jEqAFK84Slz0Wew9/w4NpI55Q';
+const PINATA_API_KEY = '2b73dc5e03ef70a65229';
+const PINATA_API_SECRET = '71f25f12c1f322bf0cb4e9c5a30755048453949e8d5cd84f2e5101c6ad2f9386';
+const PINATA_UPLOAD_URL = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 
-const auth = 'Basic ' + btoa(`${projectId}:${projectSecret}`);
+// const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
 
-const ipfs = create({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https',
-  headers: {
-    authorization: auth
-  }
-});
+// Create an IPFS client with authentication
+// const client = ipfsHttpClient({
+//   host: 'ipfs.infura.io',
+//   port: 5001,
+//   protocol: 'https',
+//   headers: {
+//     authorization: auth,
+//   },
+// });
+// const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
 const SongsList = () => {
   const [file, setFile] = useState(null);
@@ -28,36 +33,33 @@ const SongsList = () => {
   ]);
 
   // Handle file change
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  // Handle file upload to IPFS
-  const handleUpload = async () => {
-    if (!file) return;
-
-    setLoading(true);
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
-      const added = await ipfs.add(file);
-      const songUrl = `https://ipfs.infura.io/ipfs/${added.path}`;
+      setLoading(true);
 
-      // Add the new song to the list (for simplicity, we'll assume a song title here)
-      setSongs([...songs, {
-        id: songs.length + 1,
-        title: file.name,  // Using the file name as the title
-        artist: 'Unknown Artist',  // You can customize this
-        duration: 'Unknown Duration',  // Add proper duration if available
-        url: songUrl  // Store the IPFS URL
-      }]);
+      // Make POST request to Pinata to upload the file
+      const res = await axios.post(PINATA_UPLOAD_URL, formData, {
+        maxBodyLength: 'Infinity', // Pinata's file size limit handling
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          pinata_api_key: PINATA_API_KEY,
+          pinata_secret_api_key: PINATA_API_SECRET,
+        },
+      });
 
-      alert('Song uploaded successfully!');
+      const fileHash = res.data.IpfsHash;
+      const url = `https://gateway.pinata.cloud/ipfs/${fileHash}`;
+      alert.apply('successfully uploaded')
+      setFile(url);
+      setLoading(false);
     } catch (error) {
-      console.error('Error uploading file: ', error);
-      alert('Failed to upload the song');
+      console.error('Error uploading file to Pinata: ', error);
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -72,7 +74,7 @@ const SongsList = () => {
           accept="audio/*" // Only allow audio files
         />
         <button
-          onClick={handleUpload}
+          onClick={handleFileChange}
           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
           disabled={loading || !file}
         >
