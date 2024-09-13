@@ -4,24 +4,11 @@ import { create as ipfsHttpClient } from "ipfs-http-client";
 import { Buffer } from 'buffer'; // Import Buffer polyfill
 import axios from 'axios';
 
-// Replace with your Infura project ID and secret
 const PINATA_API_KEY = '2b73dc5e03ef70a65229';
 const PINATA_API_SECRET = '71f25f12c1f322bf0cb4e9c5a30755048453949e8d5cd84f2e5101c6ad2f9386';
 const PINATA_UPLOAD_URL = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 const PINATA_PIN_LIST_URL = `https://api.pinata.cloud/data/pinList`;
 
-// const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
-
-// Create an IPFS client with authentication
-// const client = ipfsHttpClient({
-//   host: 'ipfs.infura.io',
-//   port: 5001,
-//   protocol: 'https',
-//   headers: {
-//     authorization: auth,
-//   },
-// });
-// const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 const SongsList = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -35,7 +22,6 @@ const SongsList = () => {
     const fetchPinnedFiles = async () => {
       setLoading(true);
       try {
-        // Make a request to get the list of pinned files
         const res = await axios.get(PINATA_PIN_LIST_URL, {
           headers: {
             pinata_api_key: PINATA_API_KEY,
@@ -43,12 +29,10 @@ const SongsList = () => {
           },
         });
 
-        // Filter out audio files based on file type or extension (if available)
         const audioFiles = res.data.rows.filter((file) =>
           file.metadata.name.endsWith('.mp3') || file.metadata.name.endsWith('.wav') // Change based on your file types
         );
 
-        // Map the IPFS hash to a usable URL for playback
         const audioData = audioFiles.map((file) => ({
           id: file.id,
           title: file.metadata.name,
@@ -66,7 +50,6 @@ const SongsList = () => {
     fetchPinnedFiles();
   }, []);
 
-  // Handle file change
   const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
     const formData = new FormData();
@@ -75,7 +58,6 @@ const SongsList = () => {
     try {
       setLoading(true);
 
-      // Upload file to Pinata
       const res = await axios.post(PINATA_UPLOAD_URL, formData, {
         maxBodyLength: 'Infinity',
         headers: {
@@ -89,12 +71,11 @@ const SongsList = () => {
       const songUrl = `https://gateway.pinata.cloud/ipfs/${fileHash}`;
       alert('Successfully uploaded');
 
-      // Add new song to the list (mock metadata added for demonstration)
       const newSong = {
         id: songs.length + 1,
-        title: selectedFile.name.split('.')[0], // Use file name as title
-        artist: 'Unknown Artist', // You can extend this to input artist name
-        duration: 'Unknown', // Can be improved with metadata reading
+        title: selectedFile.name.split('.')[0], 
+        artist: 'Unknown Artist',
+        duration: 'Unknown',
         url: songUrl,
       };
       setSongs([...songs, newSong]);
@@ -115,7 +96,7 @@ const SongsList = () => {
           type="file"
           onChange={handleFileChange}
           className="mb-4"
-          accept="audio/*" // Only allow audio files
+          accept="audio/*" 
         />
         <button
           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
@@ -135,10 +116,7 @@ const SongsList = () => {
             </div>
             <div className="flex items-center">
               <p className="text-gray-400 mr-4">{song.duration}</p>
-              <audio controls>
-                <source src={song.url} type="audio/mpeg" />
-                Your browser does not support the audio element.
-              </audio>
+
             </div>
           </div>
         ))}

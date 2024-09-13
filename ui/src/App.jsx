@@ -12,7 +12,6 @@ import {
 } from "react-router-dom";
 import Login from './pages/Login';
 import HomePage from './pages/HomePage';
-import UploadSong from './pages/UploadSong';
 
 const App = () => {
   // const navigate = useNavigate();
@@ -22,7 +21,6 @@ const App = () => {
         <Route path="/" element={<Login />}/>
         <Route index element={<Login/>}/>
         <Route path="/home" element={<HomePage />} />
-        <Route path="/upload" element={<UploadSong/>}/>
 
       </>
     )
