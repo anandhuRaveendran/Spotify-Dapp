@@ -8,7 +8,12 @@ This project is a decentralized, blockchain-based music streaming platform inspi
 - **Decentralized Storage**: Songs are stored securely using IPFS via Pinata.
 - **User-Friendly Interface**: A React front-end makes it easy to upload and stream songs in a decentralized way.
 - **Secure & Transparent**: Powered by the Ethereum blockchain for immutability and transparency.
-
+# User Access: 
+Users can listen to songs after paying a small access fee in Sepolia ETH.
+# Song Upload:
+Creators can upload their songs to the platform, which are then tokenized as ERC721 tokens representing ownership.
+# Rewards System:
+Song creators receive weekly rewards based on the play count of their songs. The smart contract automatically distributes rewards to the owners based on the number of plays their songs receive.
 ## Technologies Used
 
 - **Pinata**: For decentralized song file storage on IPFS.
@@ -51,10 +56,7 @@ To deploy hardhat :
     npx hardhat run scripts/deploy.js --network sepolia
 
     ```
-# Features
-User Access: Users can listen to songs after paying a small access fee in Sepolia ETH.
-Song Upload: Creators can upload their songs to the platform, which are then tokenized as ERC721 tokens representing ownership.
-Rewards System: Song creators receive weekly rewards based on the play count of their songs. The smart contract automatically distributes rewards to the owners based on the number of plays their songs receive.
+
 ## Usage
 
 Once the application is running, users can:
