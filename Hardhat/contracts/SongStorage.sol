@@ -1,70 +1,66 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract SongStorage {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract SongStorage is ERC721 {
+    
     // Struct to store song details
     struct Song {
         string ipfsHash;  // IPFS hash of the song
         string title;     // Title of the song
         address uploader; // Address of the uploader
-        uint256 playCount; // Track the number of plays
     }
 
-    // Mapping to store song details by song ID
+    // Mapping to store song details by token ID
     mapping(uint256 => Song) public songs;
 
-    // Mapping to store song play counts
-    mapping(uint256 => uint256) public songPlays;
-
     // Counter to track song IDs
-    uint256 public songCounter;
+    uint256 private _tokenIdCounter;
 
-    // Reward per play (set a value in wei)
-    uint256 public constant REWARD_PER_PLAY = 0.001 ether;
+    // Event when a song is uploaded and tokenized
+    event SongTokenized(uint256 tokenId, string ipfsHash, string title, address uploader);
 
-    // Event when a song is uploaded
-    event SongUploaded(uint256 songId, string ipfsHash, string title, address uploader);
-    // Event when a song is played
-    event SongPlayed(uint256 songId, address user);
+    constructor() ERC721("SongToken", "SONG") {}
 
-    // Function to store a song with its IPFS hash
-    function uploadSong(string memory _ipfsHash, string memory _title) external {
-        songCounter++;
-        songs[songCounter] = Song({
+    // Function to upload a song and mint an ERC721 token
+    function uploadAndTokenizeSong(string memory _ipfsHash, string memory _title) external {
+        // Increment the token ID counter
+        _incrementCounter();
+        uint256 newSongId = _tokenIdCounter;
+
+        // Store song details
+        songs[newSongId] = Song({
             ipfsHash: _ipfsHash,
             title: _title,
-            uploader: msg.sender,
-            playCount: 0
+            uploader: msg.sender
         });
 
-        emit SongUploaded(songCounter, _ipfsHash, _title, msg.sender);
+        // Mint the ERC721 token
+        _mint(msg.sender, newSongId);
+
+        emit SongTokenized(newSongId, _ipfsHash, _title, msg.sender);
     }
 
-    // Function to retrieve a song by its ID
-    function getSong(uint256 _songId) external view returns (string memory, string memory, address, uint256) {
-        require(_songId > 0 && _songId <= songCounter, "Invalid song ID");
-        Song memory song = songs[_songId];
-        return (song.ipfsHash, song.title, song.uploader, song.playCount);
+    // Function to retrieve a song by its token ID
+    function getSong(uint256 _tokenId) external view returns (string memory, string memory, address) {
+        require(_existsInStorage(_tokenId), "Song does not exist");
+        Song memory song = songs[_tokenId];
+        return (song.ipfsHash, song.title, song.uploader);
     }
 
-    // Function to record a song play
-    function playSong(uint256 _songId) external payable {
-        require(_songId > 0 && _songId <= songCounter, "Invalid song ID");
-
-        // Increment play count for the song
-        songs[_songId].playCount++;
-        
-        // Emit song played event
-        emit SongPlayed(_songId, msg.sender);
-
-        // Reward the uploader (artist) for the play
-        address artist = songs[_songId].uploader;
-        payable(artist).transfer(REWARD_PER_PLAY);
+    // Internal function to increment the counter
+    function _incrementCounter() internal {
+        _tokenIdCounter += 1;
     }
 
-    // Function for the owner to fund the contract with ETH for rewards
-    function fundContract() external payable {}
+    // Public view function to get the current counter value
+    function currentCounter() public view returns (uint256) {
+        return _tokenIdCounter;
+    }
 
-    // Fallback function to receive Ether
-    receive() external payable {}
+    // Custom function to check if a song exists in storage
+    function _existsInStorage(uint256 _tokenId) internal view returns (bool) {
+        return bytes(songs[_tokenId].ipfsHash).length > 0;
+    }
 }

@@ -1,9 +1,7 @@
-/* eslint-disable no-unused-vars */
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
-import { create as ipfsHttpClient } from "ipfs-http-client";
-import { Buffer } from 'buffer'; // Import Buffer polyfill
 import axios from 'axios';
-import {Contract, BrowserProvider} from 'ethers';
+import { Contract } from 'ethers';
 import { AccessControlModuleAccessControl } from '../scdata/deployed_addresses.json'; // Import your deployed contract address
 import SongStorageABI from '../scdata/SongStorage.json'; // Import your contract ABI
 import { useLocation } from 'react-router-dom';
@@ -14,18 +12,16 @@ const PINATA_UPLOAD_URL = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 const PINATA_PIN_LIST_URL = `https://api.pinata.cloud/data/pinList`;
 
 const SongsList = () => {
-  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [songs, setSongs] = useState([]);
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
   const location = useLocation();
   const { signerdata } = location.state || {};
+
   useEffect(() => {
     const fetchPinnedFiles = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(PINATA_PIN_LIST_URL, {
+        const res = await axios.get(PINATA_PIN_LIST_URL, {  
           headers: {
             pinata_api_key: PINATA_API_KEY,
             pinata_secret_api_key: PINATA_API_SECRET,
@@ -33,7 +29,7 @@ const SongsList = () => {
         });
 
         const audioFiles = res.data.rows.filter((file) =>
-          file.metadata.name.endsWith('.mp3') || file.metadata.name.endsWith('.wav') // Change based on your file types
+          file.metadata.name.endsWith('.mp3') || file.metadata.name.endsWith('.wav')
         );
 
         const audioData = audioFiles.map((file) => ({
@@ -83,7 +79,7 @@ const SongsList = () => {
 
       setSongs([...songs, newSong]);
 
-      // Call the smart contract to upload song
+      // Call the smart contract to upload and mint a token
       await uploadSongToContract(fileHash, selectedFile.name.split('.')[0]);
 
       setLoading(false);
@@ -94,31 +90,27 @@ const SongsList = () => {
   };
 
   const uploadSongToContract = async (ipfsHash, title) => {
-    if (!signerdata ) {
+    if (!signerdata) {
       console.error("Signer not set. Please connect your wallet.");
       return;
     }
 
     try {
-
       const songStorageContract = new Contract(AccessControlModuleAccessControl, SongStorageABI.abi, signerdata);
-      const tx = await songStorageContract.uploadSong(ipfsHash, title);
+      const tx = await songStorageContract.uploadAndTokenizeSong(ipfsHash, title);
       await tx.wait(); // Wait for the transaction to be mined
-      alert('Song uploaded to blockchain successfully!');
+      alert('Song uploaded and tokenized successfully!');
     } catch (error) {
       console.error('Error uploading song to contract: ', error);
     }
   };
 
-  const connectWallet = async () => {
-    console.log(signerdata)
 
-  };
 
   return (
     <div>
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Upload Song to IPFS</h1>
+        <h1 className="text-2xl font-bold mb-4">Upload Song to IPFS and Mint Token</h1>
 
         <input
           type="file"
@@ -126,18 +118,12 @@ const SongsList = () => {
           className="mb-4"
           accept="audio/*"
         />
+
         <button
           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
-          onClick={connectWallet}
-        >
-          Connect Wallet
-        </button>
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
-          disabled={loading || !file}
           onClick={handleFileChange}
         >
-          {loading ? 'Uploading...' : 'Upload Song'}
+          {loading ? 'Uploading...' : 'Upload and Mint Token'}
         </button>
       </div>
 
@@ -151,6 +137,7 @@ const SongsList = () => {
             </div>
             <div className="flex items-center">
               <p className="text-gray-400 mr-4">{song.duration}</p>
+              <a href={song.url} className="text-blue-400 hover:underline">Listen</a>
             </div>
           </div>
         ))}
