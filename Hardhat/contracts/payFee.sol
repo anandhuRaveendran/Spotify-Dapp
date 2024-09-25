@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 contract AccessControl {
-
     // Owner of the contract
     address public owner;
 
@@ -14,6 +13,7 @@ contract AccessControl {
 
     // Events
     event AccessGranted(address indexed user, uint256 amount);
+    event AccessChecked(address user, bool hasAccess);
 
     // Constructor sets the contract owner
     constructor() {
@@ -43,8 +43,14 @@ contract AccessControl {
         payable(owner).transfer(address(this).balance);
     }
 
-    // Check if an address has access
+    // Check if an address has access (now as a view function)
     function checkAccess(address _user) external view returns (bool) {
         return hasAccess[_user];
+    }
+
+    // Emit access check event
+    function emitAccessCheck(address _user) external {
+        bool access = hasAccess[_user];
+        emit AccessChecked(_user, access);
     }
 }

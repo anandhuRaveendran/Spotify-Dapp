@@ -1,8 +1,12 @@
 /* eslint-disable no-unused-vars */
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { Buffer } from 'buffer'; // Import Buffer polyfill
 import axios from 'axios';
+import {Contract, BrowserProvider} from 'ethers';
+import { AccessControlModuleAccessControl } from '../scdata/deployed_addresses.json'; // Import your deployed contract address
+import SongStorageABI from '../scdata/SongStorage.json'; // Import your contract ABI
+import { useLocation } from 'react-router-dom';
 
 const PINATA_API_KEY = '2b73dc5e03ef70a65229';
 const PINATA_API_SECRET = '71f25f12c1f322bf0cb4e9c5a30755048453949e8d5cd84f2e5101c6ad2f9386';
@@ -12,14 +16,12 @@ const PINATA_PIN_LIST_URL = `https://api.pinata.cloud/data/pinList`;
 const SongsList = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [songs, setSongs] = useState([
-    { id: 1, title: 'Blinding Lights', artist: 'The Weeknd', duration: '3:24', url: '' },
-    { id: 2, title: 'Shape of You', artist: 'Ed Sheeran', duration: '4:23', url: '' },
-    { id: 3, title: 'Levitating', artist: 'Dua Lipa', duration: '3:50', url: '' },
-    { id: 4, title: 'Save Your Tears', artist: 'The Weeknd', duration: '3:35', url: '' },
-  ]);
+  const [songs, setSongs] = useState([]);
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const location = useLocation();
+  const { signerdata } = location.state || {};
   useEffect(() => {
-    
     const fetchPinnedFiles = async () => {
       setLoading(true);
       try {
@@ -58,7 +60,6 @@ const SongsList = () => {
 
     try {
       setLoading(true);
-
       const res = await axios.post(PINATA_UPLOAD_URL, formData, {
         maxBodyLength: 'Infinity',
         headers: {
@@ -74,18 +75,44 @@ const SongsList = () => {
 
       const newSong = {
         id: songs.length + 1,
-        title: selectedFile.name.split('.')[0], 
+        title: selectedFile.name.split('.')[0],
         artist: 'Unknown Artist',
         duration: 'Unknown',
         url: songUrl,
       };
+
       setSongs([...songs, newSong]);
+
+      // Call the smart contract to upload song
+      await uploadSongToContract(fileHash, selectedFile.name.split('.')[0]);
 
       setLoading(false);
     } catch (error) {
       console.error('Error uploading file to Pinata: ', error);
       setLoading(false);
     }
+  };
+
+  const uploadSongToContract = async (ipfsHash, title) => {
+    if (!signerdata ) {
+      console.error("Signer not set. Please connect your wallet.");
+      return;
+    }
+
+    try {
+
+      const songStorageContract = new Contract(AccessControlModuleAccessControl, SongStorageABI.abi, signerdata);
+      const tx = await songStorageContract.uploadSong(ipfsHash, title);
+      await tx.wait(); // Wait for the transaction to be mined
+      alert('Song uploaded to blockchain successfully!');
+    } catch (error) {
+      console.error('Error uploading song to contract: ', error);
+    }
+  };
+
+  const connectWallet = async () => {
+    console.log(signerdata)
+
   };
 
   return (
@@ -97,11 +124,18 @@ const SongsList = () => {
           type="file"
           onChange={handleFileChange}
           className="mb-4"
-          accept="audio/*" 
+          accept="audio/*"
         />
         <button
           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
+          onClick={connectWallet}
+        >
+          Connect Wallet
+        </button>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
           disabled={loading || !file}
+          onClick={handleFileChange}
         >
           {loading ? 'Uploading...' : 'Upload Song'}
         </button>
@@ -117,7 +151,6 @@ const SongsList = () => {
             </div>
             <div className="flex items-center">
               <p className="text-gray-400 mr-4">{song.duration}</p>
-
             </div>
           </div>
         ))}
