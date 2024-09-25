@@ -23,12 +23,6 @@ This project is a decentralized, blockchain-based music streaming platform inspi
 - [Hardhat](https://hardhat.org/) installed globally or locally in your project
 - Ethereum Sepolia testnet ETH for transactions (can be obtained from the [Sepolia faucet](https://sepoliafaucet.com))
 
-## Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/spotify-clone.git
-   cd spotify-clone
 
 ## Installation
 
